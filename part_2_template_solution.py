@@ -163,8 +163,73 @@ class Section2:
         ntest_list: list[int] = [],
     ) -> dict[int, dict[str, Any]]:
         """ """
+        
         # Enter your code and fill the `answer`` dictionary
         answer = {}
+
+        for ntrain in ntrain_list:
+            if ntrain not in answer:
+                answer[ntrain] = {}
+            # selecting training samples
+            Xtrain = X[:ntrain]
+            ytrain = y[:ntrain]
+            #class_count_train = np.array([np.sum(ytrain == c) for c in np.unique(y)])
+            # class_count_train = list(nu._count_elements(ytrain).values())
+            class_count_train = nu._count_elements(ytrain)
+            
+            for ntest in ntest_list:
+                # selecting testing samples 
+                Xtest_subset = Xtest[ntrain:ntrain+ntest]
+                ytest_subset = ytest[ntrain:ntrain+ntest]
+                #class_count_test = np.array([np.sum(ytest_subset == c) for c in np.unique(y)])
+                #class_count_test = list(nu._count_elements(ytest_subset).values())
+                class_count_test = nu._count_elements(ytest_subset)
+                
+                
+                # Part C: Decision Tree Classifier with k-fold cross validation
+                clf_c = DecisionTreeClassifier(random_state=self.seed)
+                kf_c = KFold(n_splits=5, random_state=self.seed, shuffle=True)
+                scores_c = u.train_simple_classifier_with_cv(Xtrain=Xtrain, ytrain=ytrain, clf=clf_c, cv=kf_c)
+
+                print("Mean accuracy scores:", scores_c['test_score'].mean())
+                print("Standard deviation of accuracy scores:", scores_c['test_score'].std())
+
+                # Part D: Decision Tree classifier with shuffle-split cross validation
+                clf_d = DecisionTreeClassifier(random_state=self.seed)
+                ss_d = ShuffleSplit(n_splits=5, random_state=self.seed, test_size=self.frac_train)
+                scores_d = u.train_simple_classifier_with_cv(Xtrain=Xtrain, ytrain=ytrain, clf=clf_d, cv=ss_d)
+
+                print("Mean accuracy scores:", scores_d['test_score'].mean())
+                print("Standard deviation of accuracy scores:", scores_d['test_score'].std())
+                
+                # Part F: Logistic Regression with 300 iterations
+                clf_f = LogisticRegression(max_iter=300, random_state=self.seed)
+                ss_f = ShuffleSplit(n_splits=5, random_state=self.seed, test_size=self.frac_train)
+                scores_f = u.train_simple_classifier_with_cv(Xtrain=Xtrain, ytrain=ytrain, clf=clf_f, cv=ss_f)
+
+                # Comparing results from part D and part F
+                # Determine the model with the highest accuracy on average
+                model_highest_accuracy = "Decision Tree" if scores_d['test_score'].mean() > scores_f['test_score'].mean() else "Logistic Regression"
+                print(model_highest_accuracy)
+                
+                # Determine which model has the lowest variance on average
+                # model_lowest_variance = "Random Forest" if scores_RF['test_score'].std() < scores_DT['test_score'].std() else "Decision Tree"
+                model_lowest_variance = min(scores_d['test_score'].std(), scores_f['test_score'].std())
+                print(model_lowest_variance)
+                
+                # Determine which mdel is faster to train
+                # model_fastest = "Random Forest" if scores_RF['fit_time'].mean() < scores_DT['fit_time'].mean() else "Decision Tree"
+                model_fastest = min(scores_d['fit_time'].mean(), scores_f['fit_time'].mean())
+                print(model_fastest)
+
+                answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": scores_c},
+                                  "partD": {"clf": clf_d, "cv": ss_d, "scores": scores_d},
+                                  "partF": {"clf": clf_f, "cv": ss_f, "scores": scores_f},
+                                  "ntrain": ntrain, 
+                                  "ntest": ntest, 
+                                  "class_count_train": list(class_count_train.values()), 
+                                  "class_count_test": list(class_count_test.values())
+                                  }
 
         """
         `answer` is a dictionary with the following keys:
@@ -183,3 +248,4 @@ class Section2:
         """
 
         return answer
+
