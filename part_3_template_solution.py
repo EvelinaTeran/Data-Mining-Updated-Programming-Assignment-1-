@@ -32,16 +32,23 @@ class Section3:
         """
         # Your code here to analyze class distribution
         # Hint: Consider using collections.Counter or numpy.unique for counting
-
+        # Hint: Consider using collections.Counter or numpy.unique for counting
+        class_counts = {}
         uniq, counts = np.unique(y, return_counts=True)
-        print(f"{uniq=}")
-        print(f"{counts=}")
-        print(f"{np.sum(counts)=}")
+        for label, count in zip(uniq, counts):
+            class_counts[label] = count
+        
+        num_classes = len(class_counts)
+        print(f"{uniq=}", uniq)
+        print(f"{counts=}", counts)
+        print(f"{np.sum(counts)=}", np.sum(counts))
 
         return {
-            "class_counts": {},  # Replace with actual class counts
-            "num_classes": 0,  # Replace with the actual number of classes
+            "class_counts": class_counts,  # Replace with actual class counts
+            "num_classes": num_classes,  # Replace with the actual number of classes
         }
+
+
 
     # --------------------------------------------------------------------------
     """
