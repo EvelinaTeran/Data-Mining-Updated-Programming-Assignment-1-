@@ -165,15 +165,49 @@ class Section1:
         y: NDArray[np.int32],
     ):
         # Enter your code and fill the `answer` dictionary
+        # Enter your code and fill the `answer` dictionary
+        # Create a Decision Tree Classifier
+        clf = DecisionTreeClassifier(random_state = self.seed)
+        
+        # Create a Shuffle-Split cross validator with 5 splits
+        ss = ShuffleSplit(n_splits=5, random_state=self.seed, test_size=self.frac_train)
 
+        # Train the classifier using shuffle-split cross validation
+        scores = u.train_simple_classifier_with_cv(X, y, clf, ss)
+        
+        # Print mean and standard devaition of accuracy scores
+        print("Mean accuracy scores:", scores['mean_accuracy'])
+        print("Standard deviation of accuracy scores:", scores['std_accuracy'])
+        
+        # Explain pros and cons
+        explain_kfold_vs_shuffle_split = """
+        Pros of k-fold cross validation:
+            - maximazed data usage since each data point is used for training and testing
+            - provides a better estimate of the model's perfromance
+        Cons of k-fold cross validation:
+            - computationally expensive
+            - make not be suitable for certain types of data (for example time series data)
+        Pros of shuffle-split cross validation:
+            - more flexiablity for number of splits and test size
+            - useful for really large datasets
+        Cons of shuffle-split cross validation:
+            - might not capture the data distribution as well as k-fold cross validation
+            - each point is not necessarily used for training and testing 
+        """
         # Answer: same structure as partC, except for the key 'explain_kfold_vs_shuffle_split'
 
         answer = {}
-        answer["clf"] = None
-        answer["cv"] = None
-        answer["scores"] = None
-        answer["explain_kfold_vs_shuffle_split"] = None
+        answer["clf"] = clf
+        answer["cv"] = ss
+        answer["scores"] = {
+            'mean_fit_time': scores['fit_time'].mean(),
+            'std_fit_time': scores['fit_time'].std(),
+            'mean_accuracy': scores['test_score'].mean(),
+            'std_accuracy': scores['test_score'].std()
+            }
+        answer["explain_kfold_vs_shuffle_split"] = explain_kfold_vs_shuffle_split
         return answer
+
 
     # ----------------------------------------------------------------------
     """
@@ -190,12 +224,35 @@ class Section1:
         # Answer: built on the structure of partC
         # `answer` is a dictionary with keys set to each split, in this case: 2, 5, 8, 16
         # Therefore, `answer[k]` is a dictionary with keys: 'scores', 'cv', 'clf`
-
+        k_values = [2, 5, 8, 16]
+        
         answer = {}
 
         # Enter your code, construct the `answer` dictionary, and return it.
-
+        # Loop through each value of k
+        for k in k_values:
+            # Create a Decision Tree classifier
+            clf = DecisionTreeClassifier(random_state=self.seed)
+            
+            # Create a shuffle-split cross validator with k splits
+            ss = ShuffleSplit(n_splits=k, random_state=self.seed, test_size=self.frac_train)
+            
+            # Train the classifier using shuffle-slpt cross validation
+            scores = u.train_simple_classifier_with_cv(X, y, clf, ss)
+            
+            # Store scores and classifier for this k value
+            answer[k] = {
+                "clf": clf,
+                "cv": ss,
+                "scores": {
+                    'mean_fit_time': scores['fit_time'].mean(),
+                    'std_fit_time': scores['fit_time'].std(),
+                    'mean_accuracy': scores['test_score'].mean(),
+                    'std_accuracy': scores['test_score'].std()
+                    }
+                }
         return answer
+        
 
     # ----------------------------------------------------------------------
     """
