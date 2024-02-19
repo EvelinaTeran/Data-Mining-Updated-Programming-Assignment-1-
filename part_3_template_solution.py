@@ -231,6 +231,56 @@ class Section3:
         # Enter your code and fill the `answer` dictionary
         answer = {}
 
+        # Intitialize the classifier
+        clf = SVC(random_state=self.seed)
+        
+        # define evaluation metrics
+        scoring = {
+            'accuracy': 'accuracy',
+            'f1': 'f1_macro',
+            'precision': make_scorer(precision_score, average='macro'),
+            'recall': make_scorer(recall_score, average='macro')
+            }
+        
+        # Perform stratified k-fold cross-validation
+        cv = StratifiedKFold(n_splits=5, random_state=self.seed, shuffle=True)
+        cv_results = cross_validate(clf, X, y, cv=cv, scoring=scoring, return_train_score=False)
+        
+        # Extract mean and standard deviation of evaluation metrics
+        mean_scores = {metric: np.mean(cv_results[f'test_{metric}']) for metric in scoring.keys()}
+        std_scores = {metric: np.std(cv_results[f'test_{metric}']) for metric in scoring.keys()}
+
+        # Determine if precision is higher than recall
+        is_precision_higher = mean_scores['precision'] > mean_scores['recall']
+        explain_precision_recall_relationship = "Precision is higher than Recall" if is_precision_higher else "Recall is higher than Precision"
+
+        # Train the classifier on all training data
+        clf.fit(X, y)
+        
+        # Compute confusion matrices
+        confusion_matrix_train = confusion_matrix(y, clf.predict(X))
+        confusion_matrix_test = confusion_matrix(ytest, clf.predict(Xtest))
+
+        # Prepare answer dictionary
+        answer['scores'] = {
+            'mean_accuracy': mean_scores['accuracy'],
+            'mean_recall': mean_scores['recall'],
+            'mean_precision': mean_scores['precision'],
+            'mean_f1': mean_scores['f1'],
+            'std_accuracy': std_scores['accuracy'],
+            'std_recall': std_scores['recall'],
+            'std_precision': std_scores['precision'],
+            'std_f1': std_scores['f1'],
+        }
+
+        answer['cv'] = cv
+        answer['clf'] = clf
+        answer['is_precision_higher_than_recall'] = is_precision_higher
+        answer['explain_is_precision_higher_than_recall'] = "Precision is higher than recall when the classifier prioritizes minimizing false positives over false negatives."
+        answer['confusion_matrix_train'] = confusion_matrix_train
+        answer['confusion_matrix_test'] = confusion_matrix_test
+
+
         """
         Answer is a dictionary with the following keys: 
         - "scores" : a dictionary with the mean/std of the F1 score, precision, and recall
@@ -253,6 +303,7 @@ class Section3:
         """
 
         return answer
+        
 
     # --------------------------------------------------------------------------
     """
@@ -269,6 +320,88 @@ class Section3:
         """"""
         # Enter your code and fill the `answer` dictionary
         answer = {}
+        
+        # Compute class weights
+        class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
+        print("Class weights:", class_weights)
+
+        # Initialize classifier
+        clf = SVC(random_state=self.seed)
+
+        # Define stratified k-fold cross-validator
+        skf = StratifiedKFold(n_splits=5, random_state=self.seed, shuffle=True)
+
+        # Initialize lists to store evaluation metrics
+        accuracy_scores = []
+        recall_scores = []
+        precision_scores = []
+        f1_scores = []
+
+        # Initialize confusion matrix
+        confusion_matrix_train = np.zeros((2, 2))
+        confusion_matrix_test = np.zeros((2, 2))
+        
+        # Iterate through cross-validation splits
+        for train_index, val_index in skf.split(X, y):
+            X_train, X_val = X[train_index], X[val_index]
+            y_train, y_val = y[train_index], y[val_index]
+
+            # Train classifier
+            clf.fit(X_train, y_train)
+
+            # Predict on validation set
+            y_pred_val = clf.predict(X_val)
+
+            # Update confusion matrix
+            confusion_matrix_val = confusion_matrix(y_val, y_pred_val)
+            confusion_matrix_train += confusion_matrix_val
+
+            # Calculate evaluation metrics
+            accuracy_scores.append(clf.score(X_val, y_val))
+            recall_scores.append(recall_score(y_val, y_pred_val))
+            precision_scores.append(precision_score(y_val, y_pred_val))
+            f1_scores.append(f1_score(y_val, y_pred_val))
+
+        # Compute mean and standard deviation of evaluation metrics
+        mean_scores = {
+            'accuracy': np.mean(accuracy_scores),
+            'recall': np.mean(recall_scores),
+            'precision': np.mean(precision_scores),
+            'f1': np.mean(f1_scores),
+        }
+        
+        std_scores = {
+            'accuracy': np.std(accuracy_scores),
+            'recall': np.std(recall_scores),
+            'precision': np.std(precision_scores),
+            'f1': np.std(f1_scores),
+        }
+
+        # Compute confusion matrix for testing set
+        y_pred_test = clf.predict(Xtest)
+        confusion_matrix_test = confusion_matrix(ytest, y_pred_test)
+
+        # Check if precision is higher than recall
+        is_precision_higher = mean_scores['precision'] > mean_scores['recall']
+
+        # Prepare answer dictionary
+        answer['scores'] = {
+            'mean_accuracy': mean_scores['accuracy'],
+            'mean_recall': mean_scores['recall'],
+            'mean_precision': mean_scores['precision'],
+            'mean_f1': mean_scores['f1'],
+            'std_accuracy': std_scores['accuracy'],
+            'std_recall': std_scores['recall'],
+            'std_precision': std_scores['precision'],
+            'std_f1': std_scores['f1'],
+        }
+
+        answer['cv'] = skf
+        answer['clf'] = clf
+        answer['is_precision_higher_than_recall'] = is_precision_higher
+        answer['confusion_matrix_train'] = confusion_matrix_train
+        answer['confusion_matrix_test'] = confusion_matrix_test
+
 
         """
         Answer is a dictionary with the following keys: 
@@ -295,3 +428,4 @@ class Section3:
         """
 
         return answer
+        
