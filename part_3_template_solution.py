@@ -1,6 +1,14 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import Any
+from sklearn.metrics import top_k_accuracy_score, make_scorer, precision_score, recall_score, f1_score, confusion_matrix
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier
+import utils as u
+import new_utils as nu
+from sklearn.svm import SVC
+from sklearn.model_selection import cross_validate, StratifiedKFold
+from sklearn.utils.class_weight import compute_class_weight
 
 """
    In the first two set of tasks, we will narrowly focus on accuracy - 
@@ -75,6 +83,51 @@ class Section3:
         # Enter code and return the `answer`` dictionary
 
         answer = {}
+        
+        k_values = [1, 2, 3, 4, 5]
+        plot_k_vs_score_train = []
+        plot_k_vs_score_test = []
+        
+        # Train the classifier
+        clf = DecisionTreeClassifier(random_state=self.seed)
+        clf.fit(Xtrain, ytrain)
+        
+        for k in k_values:
+            # Calculate top-k accuracy scores for both training and testing data
+            score_train = top_k_accuracy_score(ytrain, clf.predict_proba(Xtrain), k=k)
+            score_test = top_k_accuracy_score(ytest, clf.predict_proba(Xtest), k=k)
+            plot_k_vs_score_train.append((k, score_train))
+            plot_k_vs_score_test.append((k, score_test))
+            
+            # Save scores in the answer dictionary
+            answer[k] = {
+                "score_train": score_train,
+                "score_test": score_test
+                }
+        
+        # plot k vs. score for both training and testing data
+        k_train, score_train = zip(*plot_k_vs_score_train)
+        k_test, score_test = zip(*plot_k_vs_score_test)
+
+        plt.plot(k_train, score_train, label='Training Data')
+        plt.plot(k_test, score_test, label='Testing Data')
+        plt.xlabel('k')
+        plt.ylabel('Top-k Accuracy Score')
+        plt.title('Top-k Accuracy vs. k')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+        
+        # Comment on the rate of accuracy change and the usefulness of this metric
+        text_rate_accuracy_change = "The rate of accuracy change for the testing data is..."
+        text_is_topk_useful_and_why = "This metric is useful because..."
+
+        # Update answer dictionary with comments
+        answer["clf"] = clf
+        answer["plot_k_vs_score_train"] = plot_k_vs_score_train
+        answer["plot_k_vs_score_test"] = plot_k_vs_score_test
+        answer["text_rate_accuracy_change"] = text_rate_accuracy_change
+        answer["text_is_topk_useful_and_why"] = text_is_topk_useful_and_why
 
         """
         # `answer` is a dictionary with the following keys:
@@ -97,6 +150,8 @@ class Section3:
         """
 
         return answer, Xtrain, ytrain, Xtest, ytest
+        # Enter code and return the `answer`` dictionary
+
 
     # --------------------------------------------------------------------------
     """
@@ -121,7 +176,37 @@ class Section3:
         answer = {}
 
         # Answer is a dictionary with the same keys as part 1.B
-
+        # Load and prepare the MNIST dataset, filtering out digits 7 and 9
+        X, y, Xtest, ytest = u.prepare_data()
+        X, y = u.filter_out_7_9s(X, y)
+        Xtest, ytest = u.filter_out_7_9s(Xtest, ytest)
+        
+        # Scale the data matrix between 0 and 1
+        success_train, X = nu.scale_data(X)
+        success_test, Xtest = nu.scale_data(Xtest)
+        
+        # Convert 7s to 0s and 9s to 1s in the labels
+        y[y == 7] = 0
+        y[y == 9] = 1
+        ytest[ytest == 7] = 0
+        ytest[ytest == 9] = 1
+        
+        # Print the length of the filtered X and y, and the maximum value of X for both sets
+        print("Length of filtered X:", len(X))
+        print("Length of filtered y:", len(y))
+        print("Maximum value of filtered X:", np.max(X))
+        print("Length of filtered Xtest:", len(Xtest))
+        print("Length of filtered ytest:", len(ytest))
+        print("Maximum value of filtered Xtest:", np.max(Xtest))
+        
+        # Update the answer dictionary
+        answer["length_Xtrain"] = len(X)
+        answer["length_Xtest"] = len(Xtest)
+        answer["length_ytrain"] = len(y)
+        answer["length_ytest"] = len(ytest)
+        answer["max_Xtrain"] = np.max(X)
+        answer["max_Xtest"] = np.max(Xtest)
+        
         return answer, X, y, Xtest, ytest
 
     # --------------------------------------------------------------------------
