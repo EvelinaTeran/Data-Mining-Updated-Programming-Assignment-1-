@@ -15,7 +15,7 @@ from sklearn.model_selection import (
 )
 
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import GridSearchCV
 
 from typing import Any
@@ -279,7 +279,33 @@ class Section1:
         answer = {}
 
         # Enter your code, construct the `answer` dictionary, and return it.
-
+        # Create a cross validator with 5 splits 
+        ss = ShuffleSplit(n_splits=5, random_state=self.seed, test_size=self.frac_train)
+        
+        # Reuse the Decision tree classifier from part D
+        clf_DT = DecisionTreeClassifier(random_state=self.seed)
+        
+        # Create a Random Forest classifier with default parameters
+        clf_RF = RandomForestClassifier(random_state=self.seed)
+        
+        # Train the Decision Tree classifer using shuffle-split cross validation
+        scores_DT = u.train_simple_classifier_with_cv(X, y, clf_DT, ss)
+        
+        # Train the random forest classifier using shuffle split cross validation
+        scores_RF = u.train_simple_classifier_with_cv(X, y, clf_RF, ss)
+        
+        # Comparing results from part D and part F
+        # Determine the model with the highest accuracy on average
+        model_highest_accuracy = "Random Forest" if scores_RF['test_score'].mean() > scores_DT['test_score'].mean() else "Decision Tree"
+        
+        # Determine which model has the lowest variance on average
+        # model_lowest_variance = "Random Forest" if scores_RF['test_score'].std() < scores_DT['test_score'].std() else "Decision Tree"
+        model_lowest_variance = min(scores_RF['test_score'].std(), scores_DT['test_score'].std())
+        
+        # Determine which mdel is faster to train
+        # model_fastest = "Random Forest" if scores_RF['fit_time'].mean() < scores_DT['fit_time'].mean() else "Decision Tree"
+        model_fastest = min(scores_RF['fit_time'].mean(), scores_DT['fit_time'].mean())
+        
         """
          Answer is a dictionary with the following keys: 
             "clf_RF",  # Random Forest class instance
@@ -291,8 +317,26 @@ class Section1:
             "model_lowest_variance" (float)
             "model_fastest" (float)
         """
+        answer["clf_RF"] = clf_RF
+        answer["clf_DT"] = clf_DT
+        answer["cv"] = ss
+        answer["scores_RF"] = {'mean_fit_time': scores_RF['fit_time'].mean(),
+                               'std_fit_time': scores_RF['fit_time'].std(),
+                               'mean_accuracy': scores_RF['test_score'].mean(),
+                               'std_accuracy': scores_RF['test_score'].std()
+                               }
+        answer["scores_DT"] = {'mean_fit_time': scores_DT['fit_time'].mean(),
+                               'std_fit_time': scores_DT['fit_time'].std(),
+                               'mean_accuracy': scores_DT['test_score'].mean(),
+                               'std_accuracy': scores_DT['test_score'].std()
+                               }
+        answer["model_highest_accuracy"] = model_highest_accuracy
+        answer["model_lowest_variance"] = model_lowest_variance
+        answer["model_faster"] = model_fastest
+        
 
         return answer
+        
 
     # ----------------------------------------------------------------------
     """
@@ -350,6 +394,50 @@ class Section1:
         answer = {}
 
         # Enter your code, construct the `answer` dictionary, and return it.
+        # Create a Random Forest classifier with default parameters
+        clf = RandomForestClassifier(random_state=self.seed)
+        
+        # Define the grid of hyperparameters to search
+        param_grid = {
+            'criterion': ['gini', 'entropy'],
+            'max_depth': [None, 10, 20, 30],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4],
+            'max_features': ['auto', 'sqrt', 'log2']
+            }
+
+        # Create a grid search cross validator
+        grid_search = GridSearchCV(estimator=clf, param_grid=param_grid, cv=5, scoring='accuracy')
+        
+        # Perform grid search to find the best hyperparameters
+        grid_search.fit(X, y)
+        
+        # get the best estimator with the best hyperparameters
+        best_estimator = grid_search.best_estimator_
+        
+        # Get the mean accuracy score from cross validation
+        mean_accuracy_cv = grid_search.best_score_
+        
+        # Get the confusion matrix and accuracy for the original classifier on full training data
+        y_pred_train_orig = clf.fit(X, y).predict(X)
+        confusion_matrix_train_orig = confusion_matrix(y, y_pred_train_orig)
+        accuracy_orig_full_training = accuracy_score(y, y_pred_train_orig)
+        
+        # Get the confusion matrix and accuracy for the best classifier on full training data
+        y_pred_train_best = best_estimator.predict(X)
+        confusion_matrix_train_best = confusion_matrix(y, y_pred_train_best)
+        accuracy_best_full_training = accuracy_score(y, y_pred_train_best) 
+
+        # Get the confusion matrix and accuracy for the original classifier on test data
+        y_pred_test_orig = clf.fit(X, y).predict(Xtest)
+        confusion_matrix_test_orig = confusion_matrix(ytest, y_pred_test_orig)
+        accuracy_orig_full_testing = accuracy_score(ytest, y_pred_test_orig)
+        
+        # Get the confusion matrix and accuracy for the best classifier on test data
+        y_pred_test_best = best_estimator.predict(Xtest)
+        confusion_matrix_test_best = confusion_matrix(ytest, y_pred_test_best)
+        accuracy_best_full_testing = accuracy_score(ytest, y_pred_test_best)
+
 
         """
            `answer`` is a dictionary with the following keys: 
@@ -378,5 +466,19 @@ class Section1:
             "accuracy_best_full_testing"
                
         """
+        answer["clf"] = clf
+        answer["default_parameters"] = clf.get_params()
+        answer["best_estimator"] = best_estimator
+        answer["grid_search"] = grid_search
+        answer["mean_accuracy_cv"]= mean_accuracy_cv
+        answer["confusion_matrix_train_orig"] = confusion_matrix_train_orig
+        answer["confusion_matrix_train_best"] = confusion_matrix_train_best
+        answer["confusion_matrix_test_orig"] = confusion_matrix_test_orig
+        answer["confusion_matrix_test_best"] = confusion_matrix_test_best
+        answer["accuracy_orig_full_training"] = accuracy_orig_full_training
+        answer["accuracy_best_full_training"] = accuracy_best_full_training
+        answer["accuracy_orig_full_testing"] = accuracy_orig_full_testing
+        answer["accuracy_best_full_testing"] = accuracy_best_full_testing
 
         return answer
+
