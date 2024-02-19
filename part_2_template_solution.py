@@ -4,7 +4,12 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import Any
+import new_utils as nu
+import utils as u
 
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import ShuffleSplit, KFold
 # ======================================================================
 
 # I could make Section 2 a subclass of Section 1, which would facilitate code reuse.
@@ -53,6 +58,53 @@ class Section2:
     ]:
         answer = {}
         # Enter your code and fill the `answer`` dictionary
+        # Implementing part 1.B
+        X, y, Xtest, ytest = u.prepare_data()
+        Xtrain, ytrain = u.filter_out_7_9s(X, y)
+        Xtest, ytest = u.filter_out_7_9s(Xtest, ytest)
+        success_train, Xtrain = nu.scale_data(Xtrain)
+        success_train, Xtest = nu.scale_data(Xtest)
+        
+        # Calculate the number of elements in each class for both training and testing datasets
+        class_count_train = nu._count_elements(ytrain)
+        class_count_test = nu._count_elements(ytest)
+        
+        # Convert dictionaries to lists
+        class_count_train_list = list(class_count_train.values())
+        class_count_test_list = list(class_count_test.values())
+
+        
+        # Set number of classes in the training and testing sets
+        nb_classes_train = len(class_count_train)
+        nb_classes_test = len(class_count_test)
+        
+        # Print the number of elements in each class y and the number of classes
+        print("Number of elements in each class (training set):", class_count_train)
+        print("Number of classes (training set):", nb_classes_train)
+        print("Number of elements in each class (testing set):", class_count_test)
+        print("Number of classes (testing set):", nb_classes_test)
+
+        # Set number of elements in the training and testing sets
+        # length_Xtrain = Xtrain.shape[0]
+        # length_Xtest = Xtest.shape[0]
+
+        length_Xtrain = len(Xtrain)
+        length_Xtest = len(Xtest)
+
+        # Set number of labels in the training and testing sets
+        length_ytrain = len(ytrain)
+        length_ytest = len(ytest)
+
+        # Set maximum value in the training and testing sets
+        max_Xtrain = np.max(Xtrain)
+        max_Xtest = np.max(Xtest)
+        
+        print("Length of Xtrain:", length_Xtrain)
+        print("Length of Xtest:", length_Xtest)
+        print("Length of ytrain:", length_ytrain)
+        print("Length of ytest:", length_ytest)
+        print("Maximum value of Xtrain:", max_Xtrain)
+        print("Maximum value of Xtest:", max_Xtest)
 
         # `answer` is a dictionary with the following keys:
         # - nb_classes_train: number of classes in the training set
@@ -65,6 +117,17 @@ class Section2:
         # - length_ytest: number of labels in the testing set
         # - max_Xtrain: maximum value in the training set
         # - max_Xtest: maximum value in the testing set
+
+        answer["nb_classes_train"] = nb_classes_train
+        answer["nb_classes_test"] = nb_classes_test
+        answer["class_count_train"] = class_count_train_list
+        answer["class_count_test"] = class_count_test_list
+        answer["length_Xtrain"] = length_Xtrain
+        answer["length_Xtest"] = length_Xtest
+        answer["length_ytrain"] = length_ytrain
+        answer["length_ytest"] = length_ytest
+        answer["max_Xtrain"] = max_Xtrain
+        answer["max_Xtest"] = max_Xtest
 
         # return values:
         # Xtrain, ytrain, Xtest, ytest: the data used to fill the `answer`` dictionary
