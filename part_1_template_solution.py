@@ -95,13 +95,20 @@ class Section1:
         answer = {}
 
         # Enter your code and fill the `answer` dictionary
+        answer["length_Xtrain"] = len(Xtrain)  # Number of samples
+        answer["length_Xtest"] = len(Xtest)
+        answer["length_ytrain"] = len(ytrain)
+        answer["length_ytest"] = len(ytest)
+        answer["max_Xtrain"] = Xtrain.max()
+        answer["max_Xtest"] = Xtest.max()
+        
+        print("Length of Xtrain:", answer["length_Xtrain"])
+        print("Length of Xtest:", answer["length_Xtest"])
+        print("Length of ytrain:", answer["length_ytrain"])
+        print("Length of ytest:", answer["length_ytest"])
+        print("Maximum value of Xtrain:", answer["max_Xtrain"])
+        print("Maximum value of Xtest:", answer["max_Xtest"])
 
-        answer["length_Xtrain"] = None  # Number of samples
-        answer["length_Xtest"] = None
-        answer["length_ytrain"] = None
-        answer["length_ytest"] = None
-        answer["max_Xtrain"] = None
-        answer["max_Xtest"] = None
         return answer, Xtrain, ytrain, Xtest, ytest
 
     """
@@ -119,13 +126,31 @@ class Section1:
         y: NDArray[np.int32],
     ):
         # Enter your code and fill the `answer` dictionary
-
+        # Create a Decision Tree Classifier
+        clf = DecisionTreeClassifier(random_state=self.seed)
+        
+        # Create a k-fold cross validator with 5 splits
+        kf = KFold(n_splits=5, random_state=self.seed, shuffle=True)
+        
+        # Train the classifier using k-fold cross-validation
+        scores = u.train_simple_classifier_with_cv(X, y, clf, kf)
+        
+        # Print the mean and standard deviation of accuracy scores
+        print("Mean accuracy scores:", scores['test_score'].mean())
+        print("Standard deviation of accuracy scores:", scores['test_score'].std())
+        
+        # Fill the answer dictionary
         answer = {}
-        answer["clf"] = None  # the estimator (classifier instance)
-        answer["cv"] = None  # the cross validator instance
+        answer["clf"] = clf  # the estimator (classifier instance)
+        answer["cv"] = kf  # the cross validator instance
         # the dictionary with the scores  (a dictionary with
         # keys: 'mean_fit_time', 'std_fit_time', 'mean_accuracy', 'std_accuracy'.
-        answer["scores"] = None
+        answer["scores"] = {
+            'mean_fit_time': scores['fit_time'].mean(),
+            'std_fit_time': scores['fit_time'].std(),
+            'mean_accuracy': scores['test_score'].mean(),
+            'std_accuracy': scores['test_score'].std()
+            }
         return answer
 
     # ---------------------------------------------------------
