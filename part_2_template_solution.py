@@ -213,16 +213,22 @@ class Section2:
                 print(model_highest_accuracy)
                 
                 # Determine which model has the lowest variance on average
-                # model_lowest_variance = "Random Forest" if scores_RF['test_score'].std() < scores_DT['test_score'].std() else "Decision Tree"
                 model_lowest_variance = min(scores_d['test_score'].std(), scores_f['test_score'].std())
                 print(model_lowest_variance)
                 
                 # Determine which mdel is faster to train
-                # model_fastest = "Random Forest" if scores_RF['fit_time'].mean() < scores_DT['fit_time'].mean() else "Decision Tree"
                 model_fastest = min(scores_d['fit_time'].mean(), scores_f['fit_time'].mean())
                 print(model_fastest)
 
-                answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": scores_c},
+                # answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": scores_c},
+                #                   "partD": {"clf": clf_d, "cv": ss_d, "scores": scores_d},
+                #                   "partF": {"clf": clf_f, "cv": ss_f, "scores": scores_f},
+                #                   "ntrain": ntrain, 
+                #                   "ntest": ntest, 
+                #                   "class_count_train": list(class_count_train.values()), 
+                #                   "class_count_test": list(class_count_test.values())
+                #                  }
+                answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": {scores_c}},
                                   "partD": {"clf": clf_d, "cv": ss_d, "scores": scores_d},
                                   "partF": {"clf": clf_f, "cv": ss_f, "scores": scores_f},
                                   "ntrain": ntrain, 
