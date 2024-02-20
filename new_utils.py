@@ -16,11 +16,11 @@ def scale_data(data):
     if not isinstance(data, np.ndarray):
         raise ValueError("Input data must be a numpy array")
     
-    if not np.issubtype(data.dtype, np.number):
+    if not np.issubdtype(data.dtype, np.number):
         raise ValueError("Data matrix must contain numerical values")
         
     # Check if all elements are floating point numbers and if not then returns False
-    if not np.issubtype(data.dtype, np.floating):
+    if not np.issubdtype(data.dtype, np.floating):
         return False, data
     
     # Scale the data to be between 0 and 1
