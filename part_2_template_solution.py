@@ -46,7 +46,6 @@ class Section2:
         all 10 classes by also printing out the number of elements in each class y and 
         print out the number of classes for both training and testing datasets. 
     """
-
     def partA(
         self,
     ) -> tuple[
@@ -132,10 +131,11 @@ class Section2:
         # return values:
         # Xtrain, ytrain, Xtest, ytest: the data used to fill the `answer`` dictionary
 
-        Xtrain = Xtest = np.zeros([1, 1], dtype="float")
-        ytrain = ytest = np.zeros([1], dtype="int")
+        # Xtrain = Xtest = np.zeros([1, 1], dtype="float")
+        # ytrain = ytest = np.zeros([1], dtype="int")
 
         return answer, Xtrain, ytrain, Xtest, ytest
+   
 
     """
     B.  Repeat part 1.C, 1.D, and 1.F, for the multiclass problem. 
@@ -152,7 +152,6 @@ class Section2:
         Xtest = X[ntrain:ntrain+test]
         ytest = y[ntrain:ntrain+test]
     """
-
     def partB(
         self,
         X: NDArray[np.floating],
@@ -163,7 +162,6 @@ class Section2:
         ntest_list: list[int] = [],
     ) -> dict[int, dict[str, Any]]:
         """ """
-        
         # Enter your code and fill the `answer`` dictionary
         answer = {}
 
@@ -213,22 +211,16 @@ class Section2:
                 print(model_highest_accuracy)
                 
                 # Determine which model has the lowest variance on average
+                # model_lowest_variance = "Random Forest" if scores_RF['test_score'].std() < scores_DT['test_score'].std() else "Decision Tree"
                 model_lowest_variance = min(scores_d['test_score'].std(), scores_f['test_score'].std())
                 print(model_lowest_variance)
                 
                 # Determine which mdel is faster to train
+                # model_fastest = "Random Forest" if scores_RF['fit_time'].mean() < scores_DT['fit_time'].mean() else "Decision Tree"
                 model_fastest = min(scores_d['fit_time'].mean(), scores_f['fit_time'].mean())
                 print(model_fastest)
 
-                # answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": scores_c},
-                #                   "partD": {"clf": clf_d, "cv": ss_d, "scores": scores_d},
-                #                   "partF": {"clf": clf_f, "cv": ss_f, "scores": scores_f},
-                #                   "ntrain": ntrain, 
-                #                   "ntest": ntest, 
-                #                   "class_count_train": list(class_count_train.values()), 
-                #                   "class_count_test": list(class_count_test.values())
-                #                  }
-                answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": {scores_c}},
+                answer[ntrain][ntest] = {"partC": {"clf": clf_c, "cv": kf_c, "scores": scores_c},
                                   "partD": {"clf": clf_d, "cv": ss_d, "scores": scores_d},
                                   "partF": {"clf": clf_f, "cv": ss_f, "scores": scores_f},
                                   "ntrain": ntrain, 
@@ -254,4 +246,5 @@ class Section2:
         """
 
         return answer
+    
 

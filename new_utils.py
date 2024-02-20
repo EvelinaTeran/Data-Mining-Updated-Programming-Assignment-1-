@@ -37,3 +37,21 @@ def scale_data(data):
         return False, data_scaled
     
     return True, data_scaled
+
+def _count_elements(arr) -> dict:
+        """
+        Count the number of elements in each class in the input array.
+
+        Args:
+            arr (NDArray): Input array.
+
+        Returns:
+            dict: Dictionary containing the count of each element.
+        """
+        counts = {}
+        for elem in arr:
+            if elem in counts:
+                counts[elem] += 1
+            else:
+                counts[elem] = 1
+        return counts
