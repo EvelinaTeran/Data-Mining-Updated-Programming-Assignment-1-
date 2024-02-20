@@ -89,8 +89,8 @@ class Section1:
         X, y, Xtest, ytest = u.prepare_data()
         Xtrain, ytrain = u.filter_out_7_9s(X, y)
         Xtest, ytest = u.filter_out_7_9s(Xtest, ytest)
-        Xtrain = nu.scale_data(Xtrain)
-        Xtest = nu.scale_data(Xtest)
+        success_Xtrain, Xtrain = nu.scale_data(Xtrain)
+        success_Xtest, Xtest = nu.scale_data(Xtest)
 
         answer = {}
 
@@ -133,7 +133,7 @@ class Section1:
         kf = KFold(n_splits=5, random_state=self.seed, shuffle=True)
         
         # Train the classifier using k-fold cross-validation
-        scores = u.train_simple_classifier_with_cv(X, y, clf, kf)
+        scores = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf, cv=kf)
         
         # Print the mean and standard deviation of accuracy scores
         print("Mean accuracy scores:", scores['test_score'].mean())
@@ -173,7 +173,7 @@ class Section1:
         ss = ShuffleSplit(n_splits=5, random_state=self.seed, test_size=self.frac_train)
 
         # Train the classifier using shuffle-split cross validation
-        scores = u.train_simple_classifier_with_cv(X, y, clf, ss)
+        scores = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf, cv=ss)
         
         # Print mean and standard devaition of accuracy scores
         print("Mean accuracy scores:", scores['mean_accuracy'])
@@ -238,7 +238,7 @@ class Section1:
             ss = ShuffleSplit(n_splits=k, random_state=self.seed, test_size=self.frac_train)
             
             # Train the classifier using shuffle-slpt cross validation
-            scores = u.train_simple_classifier_with_cv(X, y, clf, ss)
+            scores = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf, cv=ss)
             
             # Store scores and classifier for this k value
             answer[k] = {
@@ -289,10 +289,10 @@ class Section1:
         clf_RF = RandomForestClassifier(random_state=self.seed)
         
         # Train the Decision Tree classifer using shuffle-split cross validation
-        scores_DT = u.train_simple_classifier_with_cv(X, y, clf_DT, ss)
+        scores_DT = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf_DT, cv=ss)
         
         # Train the random forest classifier using shuffle split cross validation
-        scores_RF = u.train_simple_classifier_with_cv(X, y, clf_RF, ss)
+        scores_RF = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf_RF, cv=ss)
         
         # Comparing results from part D and part F
         # Determine the model with the highest accuracy on average
