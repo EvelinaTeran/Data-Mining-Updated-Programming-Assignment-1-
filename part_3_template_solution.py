@@ -119,8 +119,8 @@ class Section3:
         plt.show()
         
         # Comment on the rate of accuracy change and the usefulness of this metric
-        text_rate_accuracy_change = "The rate of accuracy change for the testing data is..."
-        text_is_topk_useful_and_why = "This metric is useful because..."
+        text_rate_accuracy_change = "The rate of accuracy change for the testing data increases as k values increase."
+        text_is_topk_useful_and_why = "This metric is useful because it allows us to evaulate a model's performance across different hyperparameters and identity the optimal parameter values that result in the ighest k accuracy."
 
         # Update answer dictionary with comments
         answer["clf"] = clf
