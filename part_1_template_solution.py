@@ -176,8 +176,8 @@ class Section1:
         scores = u.train_simple_classifier_with_cv(Xtrain=X, ytrain=y, clf=clf, cv=ss)
         
         # Print mean and standard devaition of accuracy scores
-        print("Mean accuracy scores:", scores['mean_accuracy'])
-        print("Standard deviation of accuracy scores:", scores['std_accuracy'])
+        print("Mean accuracy scores:", scores['test_score'].mean())
+        print("Standard deviation of accuracy scores:", scores['test_score'].std())
         
         # Explain pros and cons
         explain_kfold_vs_shuffle_split = """
@@ -403,7 +403,7 @@ class Section1:
             'max_depth': [None, 10, 20, 30],
             'min_samples_split': [2, 5, 10],
             'min_samples_leaf': [1, 2, 4],
-            'max_features': ['auto', 'sqrt', 'log2']
+            'max_features': [None, 'sqrt', 'log2']
             }
 
         # Create a grid search cross validator
